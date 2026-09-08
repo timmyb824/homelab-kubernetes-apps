@@ -85,7 +85,7 @@ spec:
               value: --max-old-space-size=768
             - name: OPENAI_API_KEY
               value: <path:secret/data/argocd#OPENAI_API_KEY>
-          image: n8nio/n8n:2.38.4
+          image: n8nio/n8n:2.39.0
           name: n8n
           ports:
             - containerPort: 5678
