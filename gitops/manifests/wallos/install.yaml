@@ -58,7 +58,7 @@ spec:
         - env:
             - name: TZ
               value: America/New_York
-          image: bellamy/wallos:5.5.0
+          image: bellamy/wallos:5.6.0
           name: wallos
           ports:
             - containerPort: 80
