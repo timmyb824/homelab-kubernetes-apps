@@ -78,10 +78,10 @@ spec:
           resources:
             limits:
               cpu: 1000m
-              memory: 1Gi
+              memory: 1.5Gi
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 1Gi
           volumeMounts:
             - name: libraries
               mountPath: /libraries
