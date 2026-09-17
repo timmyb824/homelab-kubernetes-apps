@@ -114,7 +114,7 @@ spec:
             claimName: portainer
       containers:
         - name: portainer
-          image: "portainer/portainer-ce:2.45.0"
+          image: "portainer/portainer-ce:2.45.1"
           imagePullPolicy: Always
           args:
           volumeMounts:
