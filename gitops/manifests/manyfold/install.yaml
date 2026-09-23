@@ -57,7 +57,7 @@ spec:
         fsGroup: 1000
       containers:
         - name: manyfold
-          image: ghcr.io/manyfold3d/manyfold:0.149.0
+          image: ghcr.io/manyfold3d/manyfold:0.150.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
