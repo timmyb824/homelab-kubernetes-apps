@@ -438,7 +438,7 @@ spec:
               mountPath: /prometheus
       containers:
         - name: prometheus
-          image: prom/prometheus:v3.14.0
+          image: prom/prometheus:v3.15.0
           args:
             - "--storage.tsdb.retention.time=12h"
             - --storage.tsdb.retention.size=3GB
