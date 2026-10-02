@@ -11,13 +11,30 @@ spec:
     namespace: external-dns
     server: "https://kubernetes.default.svc"
   project: default
-  source:
-    repoURL: https://kubernetes-sigs.github.io/external-dns/
-    targetRevision: 1.23.0
-    chart: external-dns
-    helm:
-      releaseName: external-dns
-      values: |
+  sources:
+    - repoURL: https://kubernetes-sigs.github.io/external-dns/
+      targetRevision: 1.23.0
+      chart: external-dns
+      helm:
+        releaseName: external-dns
+        values: |
+          provider:
+            name: cloudflare
+          policy: upsert-only
+          domainFilters:
+            - timmybtech.com
+          annotationFilter: external-dns.kubernetes.io/enabled=true
+          txtOwnerId: homelab
+          sources:
+            - service
+            - ingress
+            - traefik-proxy
+          env:
+            - name: CF_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: external-dns-cloudflare
+                  key: api-token
           resources:
             requests:
               cpu: 50m
@@ -25,10 +42,13 @@ spec:
             limits:
               cpu: 100m
               memory: 100Mi
+    - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
+      path: "gitops/manifests/external-dns"
+      targetRevision: HEAD
   syncPolicy:
     automated:
       prune: true
       selfHeal: false
     syncOptions:
       - CreateNamespace=true
-      - ApplyOutOfSync=true
+      - ApplyOutOfSyncOnly=true
