@@ -456,11 +456,6 @@ data:
             href: https://paperless-ai.local.timmybtech.com/
             namespace: paperless-ngx
             app: paperless-ai
-        - Portainer (k8s):
-            icon: portainer.png
-            href: https://portainer.local.timmybtech.com/
-            namespace: portainer
-            app: portainer
         - RabbitMQ:
             icon: rabbitmq.png
             href: https://rabbitmq.local.timmybtech.com/
