@@ -1,0 +1,85 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns-adguard
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations: {}
+spec:
+  destination:
+    namespace: external-dns
+    server: "https://kubernetes.default.svc"
+  project: default
+  sources:
+    - repoURL: https://kubernetes-sigs.github.io/external-dns/
+      targetRevision: 1.23.0
+      chart: external-dns
+      helm:
+        releaseName: external-dns-adguard
+        values: |
+          provider:
+            name: webhook
+            webhook:
+              image:
+                repository: ghcr.io/muhlba91/external-dns-provider-adguard
+                tag: v11.2.0
+              service:
+                port: 8888
+              livenessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8080
+                initialDelaySeconds: 10
+                timeoutSeconds: 5
+              readinessProbe:
+                httpGet:
+                  path: /healthz
+                  port: 8080
+                initialDelaySeconds: 10
+                timeoutSeconds: 5
+              env:
+                - name: ADGUARD_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: url
+                - name: ADGUARD_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: user
+                - name: ADGUARD_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: password
+                - name: DRY_RUN
+                  value: "false"
+          registry: noop
+          policy: upsert-only
+          domainFilters:
+            - local.timmybtech.com
+          annotationFilter: external-dns.kubernetes.io/enabled=true
+          sources:
+            - service
+            - ingress
+            - traefik-proxy
+            - crd
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+    - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
+      path: "gitops/manifests/external-dns-adguard"
+      targetRevision: HEAD
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

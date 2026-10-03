@@ -23,6 +23,8 @@ spec:
           policy: upsert-only
           domainFilters:
             - timmybtech.com
+          excludeDomains:
+            - local.timmybtech.com
           annotationFilter: external-dns.kubernetes.io/enabled=true
           txtOwnerId: homelab
           sources:
