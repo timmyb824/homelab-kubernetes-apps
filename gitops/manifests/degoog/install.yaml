@@ -119,7 +119,7 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: traefik-external
     external-dns.kubernetes.io/enabled: "true"
-    external-dns.kubernetes.io/target: d08b99c8-23be-40dc-a409-c4e46e805e55.cfargotunnel.com
+    external-dns.kubernetes.io/target: <path:secret/data/cloudflared#HOMELAB_TUNNEL_ID>
     external-dns.kubernetes.io/cloudflare-proxied: "true"
 spec:
   entryPoints:
