@@ -44,6 +44,10 @@ spec:
             - containerPort: 4444
               protocol: TCP
           env:
+            - name: PUID
+              value: "0"
+            - name: PGID
+              value: "0"
             - name: DEGOOG_PUBLIC_INSTANCE
               value: "true"
             - name: DEGOOG_SETTINGS_PASSWORDS
