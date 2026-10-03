@@ -36,10 +36,6 @@ spec:
       labels:
         app.kubernetes.io/name: degoog
     spec:
-      securityContext:
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
       containers:
         - name: degoog
           image: ghcr.io/degoog-org/degoog:1.0.0
