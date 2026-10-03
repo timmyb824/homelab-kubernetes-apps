@@ -1,0 +1,133 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: degoog
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: degoog-data
+  namespace: degoog
+spec:
+  storageClassName: nfs-csi-synologynas
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: degoog
+  namespace: degoog
+  labels:
+    app.kubernetes.io/name: degoog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: degoog
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: degoog
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: degoog
+          image: ghcr.io/degoog-org/degoog:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4444
+              protocol: TCP
+          env:
+            - name: DEGOOG_PUBLIC_INSTANCE
+              value: "true"
+            - name: DEGOOG_SETTINGS_PASSWORDS
+              value: <path:secret/data/argocd#DEGOOG_SETTINGS_PASSWORD>
+            - name: DEGOOG_POSTGRES_HOST
+              value: <path:secret/data/postgres_db#HOST_NAME>
+            - name: DEGOOG_POSTGRES_PORT
+              value: "5432"
+            - name: DEGOOG_POSTGRES_USER
+              value: <path:secret/data/postgres_db#USER>
+            - name: DEGOOG_POSTGRES_PASSWORD
+              value: <path:secret/data/postgres_db#PASSWORD>
+            - name: DEGOOG_POSTGRES_DATABASE
+              value: degoog
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /app/data
+              name: degoog-data
+      volumes:
+        - name: degoog-data
+          persistentVolumeClaim:
+            claimName: degoog-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: degoog
+  namespace: degoog
+spec:
+  ports:
+    - name: "4444"
+      port: 4444
+      targetPort: 4444
+  selector:
+    app.kubernetes.io/name: degoog
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: degoog-ingress
+  namespace: degoog
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: traefik.local.timmybtech.com
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`degoog.local.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: degoog
+          port: 4444
+  tls:
+    secretName: local-timmybtech-com-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: degoog-public
+  namespace: degoog
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: d08b99c8-23be-40dc-a409-c4e46e805e55.cfargotunnel.com
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`degoog.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: degoog
+          port: 4444
+  tls:
+    secretName: timmybtech-com-tls
