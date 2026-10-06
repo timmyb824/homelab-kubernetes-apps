@@ -1,0 +1,144 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: degoog-mcp-config
+  namespace: degoog
+data:
+  mcp.yml: |
+    degoog:
+      url: "http://degoog.degoog.svc.cluster.local:4444"
+    deepSearch:
+      enabled: true
+      provider: openai-compat
+      model: "gpt-4o-mini-or"
+      baseUrl: "http://litellm.litellm.svc.cluster.local:4000/v1"
+      apiKey: "${LLM_API_KEY:-}"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: degoog-mcp-data
+  namespace: degoog
+spec:
+  storageClassName: nfs-csi-synologynas
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: degoog-mcp
+  namespace: degoog
+  labels:
+    app.kubernetes.io/name: degoog-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: degoog-mcp
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: degoog-mcp
+    spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+      containers:
+        - name: degoog-mcp
+          image: ghcr.io/degoog-org/mcp:0.4.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4443
+              protocol: TCP
+          env:
+            - name: DEGOOG_MCP_CONFIG
+              value: /data/mcp.yml
+            - name: DEGOOG_MCP_BIND_HOST
+              value: ""
+            - name: DEGOOG_MCP_PORT
+              value: "4443"
+            - name: DEGOOG_MCP_LOG_LEVEL
+              value: info
+            - name: DEGOOG_MCP_DEGOOG_URL
+              value: http://degoog.degoog.svc.cluster.local:4444
+            - name: DEGOOG_MCP_DEGOOG_API_KEY
+              value: <path:secret/data/argocd#DEGOOG_API_KEY>
+            - name: DEGOOG_MCP_AUTH_TOKEN
+              value: <path:secret/data/argocd#DEGOOG_MCP_AUTH_TOKEN>
+            - name: DEGOOG_MCP_USER_AGENT
+              value: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+            - name: LLM_API_KEY
+              value: <path:secret/data/argocd#DEGOOG_MCP_LLM_API_KEY>
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 4443
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 4443
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - mountPath: /data
+              name: degoog-mcp-data
+            - mountPath: /data/mcp.yml
+              subPath: mcp.yml
+              name: degoog-mcp-config
+      volumes:
+        - name: degoog-mcp-data
+          persistentVolumeClaim:
+            claimName: degoog-mcp-data
+        - name: degoog-mcp-config
+          configMap:
+            name: degoog-mcp-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: degoog-mcp
+  namespace: degoog
+spec:
+  ports:
+    - name: "4443"
+      port: 4443
+      targetPort: 4443
+  selector:
+    app.kubernetes.io/name: degoog-mcp
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: degoog-mcp-ingress
+  namespace: degoog
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: traefik.local.timmybtech.com
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`degoog-mcp.local.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: degoog-mcp
+          port: 4443
+  tls:
+    secretName: local-timmybtech-com-tls

@@ -62,6 +62,8 @@ spec:
               value: <path:secret/data/postgres_db#PASSWORD>
             - name: DEGOOG_POSTGRES_DATABASE
               value: degoog
+            - name: DEGOOG_VALKEY_URL
+              value: <path:secret/data/database#REDIS_CONN_STRING>
           resources:
             requests:
               cpu: 50m
