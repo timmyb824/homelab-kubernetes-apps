@@ -312,6 +312,11 @@ stringData:
   DATABASE_URL: "<path:secret/data/database#PG_CONN_STRING>/litellm?schema=public"
   REDIS_HOST: "<path:secret/data/database#REDIS_HOST>"
   REDIS_PASSWORD: "<path:secret/data/database#REDIS_PASSWORD>"
+  SMTP_HOST: "<path:secret/data/google_smtp#SMTP_HOST>"
+  SMTP_PORT: "587"
+  SMTP_USERNAME: "<path:secret/data/google_smtp#SMTP_USER>"
+  SMTP_PASSWORD: "<path:secret/data/google_smtp#SMTP_PASSWORD>"
+  SMTP_SENDER_EMAIL: "<path:secret/data/google_smtp#SMTP_FROM>"
 ---
 apiVersion: apps/v1
 kind: Deployment
