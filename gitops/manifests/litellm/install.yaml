@@ -256,26 +256,6 @@ data:
           input_cost_per_token: 0.0000015     # $1.5/1M
           output_cost_per_token: 0.000009     # $9.0/1M
 
-      - model_name: qwen2.5-coder
-        litellm_params:
-          model: ollama/qwen2.5-coder:7b
-          api_base: http://ollama.homelab.lan:11434
-
-      - model_name: llama3.1
-        litellm_params:
-          model: ollama/llama3.1:8b
-          api_base: http://ollama.homelab.lan:11434
-
-      - model_name: qwen2.5-coder-14b
-        litellm_params:
-          model: ollama/qwen2.5-coder:14b
-          api_base: http://ollama.homelab.lan:11434
-
-      - model_name: qwen2.5-coder-7b-base
-        litellm_params:
-          model: ollama/qwen2.5-coder:7b-base
-          api_base: http://ollama.homelab.lan:11434
-
     litellm_settings:
       success_callback: ["prometheus", "otel"]
       require_auth_for_metrics_endpoint: false
@@ -292,6 +272,7 @@ data:
 
     general_settings:
       master_key: os.environ/LITELLM_MASTER_KEY
+      disable_env_credential_login: true
       num_retries: 0
       request_timeout: 600
       store_model_in_db: true
