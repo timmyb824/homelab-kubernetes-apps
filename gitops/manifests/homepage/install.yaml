@@ -401,6 +401,11 @@ data:
             href: https://cupdate.local.timmybtech.com/
             namespace: cupdate
             app: cupdate
+        - Degoog:
+            icon: sh-degoog.png
+            href: https://degoog.local.timmybtech.com/
+            namespace: degoog
+            app: degoog
         - Glance:
             icon: glance.png
             href: https://glance.local.timmybtech.com/
@@ -717,7 +722,7 @@ data:
         cache: 15
     - search:
         provider: custom
-        url: https://searxng.local.timmybtech.com/search?q=
+        url: https://degoog.local.timmybtech.com/search?q=
         target: _blank
         showSearchSuggestions: true
     - kubernetes:
