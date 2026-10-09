@@ -259,7 +259,7 @@ data:
       - model_name: text-embedding-3-small-or
         litellm_params:
           model: openrouter/openai/text-embedding-3-small:batch
-          api_key: os.environ/OPENAI_PROJECT_KEY
+          api_key: os.environ/OPENROUTER_API_KEY
 
     litellm_settings:
       success_callback: ["prometheus", "otel"]
