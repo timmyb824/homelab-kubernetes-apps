@@ -1,0 +1,244 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mem0
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mem0-secret
+  namespace: mem0
+  annotations:
+    avp.kubernetes.io/path: "secret/data/database"
+type: Opaque
+stringData:
+  POSTGRES_HOST: <path:secret/data/database#PG_HOST>
+  POSTGRES_USER: <path:secret/data/database#PG_USER>
+  POSTGRES_PASSWORD: <path:secret/data/database#PG_PASSWORD>
+  OPENAI_API_KEY: <path:secret/data/argocd#MEM0_LITELLM_VIRTUAL_KEY>
+  JWT_SECRET: <path:secret/data/argocd#MEM0_JWT_SECRET>
+  ADMIN_API_KEY: <path:secret/data/argocd#MEM0_ADMIN_API_KEY>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mem0-env
+  namespace: mem0
+data:
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "mem0"
+  POSTGRES_COLLECTION_NAME: "memories"
+  APP_DB_NAME: "mem0_app"
+  OPENAI_BASE_URL: "http://litellm.litellm.svc.cluster.local:4000/v1"
+  DASHBOARD_URL: "https://mem0.local.timmybtech.com"
+  AUTH_DISABLED: "false"
+  MEM0_TELEMETRY: "false"
+  MEM0_DEFAULT_LLM_MODEL: "gpt-4o-mini-or"
+  MEM0_DEFAULT_EMBEDDER_MODEL: "text-embedding-3-small"
+  PYTHONUNBUFFERED: "1"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mem0-history
+  namespace: mem0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs-csi-synologynas
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mem0
+  namespace: mem0
+  labels:
+    app.kubernetes.io/name: mem0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mem0
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mem0
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k3s-2-worker
+      initContainers:
+        - name: migrate
+          image: registry.local.timmybtech.com/mem0-api:latest
+          command: ["alembic", "upgrade", "head"]
+          envFrom:
+            - configMapRef:
+                name: mem0-env
+            - secretRef:
+                name: mem0-secret
+      containers:
+        - name: mem0
+          image: registry.local.timmybtech.com/mem0-api:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: mem0-env
+            - secretRef:
+                name: mem0-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 1Gi
+          volumeMounts:
+            - name: history
+              mountPath: /app/history
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 8000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+      volumes:
+        - name: history
+          persistentVolumeClaim:
+            claimName: mem0-history
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mem0-dashboard
+  namespace: mem0
+  labels:
+    app.kubernetes.io/name: mem0-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mem0-dashboard
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mem0-dashboard
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: k3s-2-worker
+      containers:
+        - name: mem0-dashboard
+          image: registry.local.timmybtech.com/mem0-dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "https://mem0-api.local.timmybtech.com"
+            - name: API_INTERNAL_URL
+              value: "http://mem0:8000"
+            - name: NEXT_PUBLIC_INSTANCE_NAME
+              value: "Mem0"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mem0
+  namespace: mem0
+spec:
+  selector:
+    app.kubernetes.io/name: mem0
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mem0-dashboard
+  namespace: mem0
+spec:
+  selector:
+    app.kubernetes.io/name: mem0-dashboard
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mem0-internal
+  namespace: mem0
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mem0.local.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: mem0-dashboard
+          port: 3000
+  tls:
+    secretName: local-timmybtech-com-tls
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mem0-api-internal
+  namespace: mem0
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mem0-api.local.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: mem0
+          port: 8000
+  tls:
+    secretName: local-timmybtech-com-tls
