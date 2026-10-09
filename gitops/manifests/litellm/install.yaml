@@ -296,7 +296,7 @@ stringData:
   POE_API_KEY: "<path:secret/data/argocd#POE_API_KEY>"
   LITELLM_MASTER_KEY: "<path:secret/data/argocd#LITELLM_MASTER_KEY>"
   OPENROUTER_API_KEY: "<path:secret/data/argocd#OPENROUTER_LITELLM_KEY>"
-  DATABASE_URL: "<path:secret/data/database#PG_CONN_STRING>/litellm?schema=public"
+  DATABASE_URL: "<path:secret/data/database#PG_CONN_STRING>/litellm_utf8?schema=public"
   REDIS_HOST: "<path:secret/data/database#REDIS_HOST>"
   REDIS_PASSWORD: "<path:secret/data/database#REDIS_PASSWORD>"
   SMTP_HOST: "<path:secret/data/google_smtp#SMTP_HOST>"
