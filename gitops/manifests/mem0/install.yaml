@@ -210,7 +210,8 @@ metadata:
   namespace: mem0
   annotations:
     kubernetes.io/ingress.class: traefik-external
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: traefik.local.timmybtech.com
 spec:
   entryPoints:
     - websecure
@@ -230,7 +231,8 @@ metadata:
   namespace: mem0
   annotations:
     kubernetes.io/ingress.class: traefik-external
-    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: traefik.local.timmybtech.com
 spec:
   entryPoints:
     - websecure
