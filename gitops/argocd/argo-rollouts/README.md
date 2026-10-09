@@ -17,7 +17,7 @@ kubectl create namespace argo-rollouts
 ## Install
 
 ```bash
-kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl apply --server-side -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ```
 
 ## Upgrade
@@ -30,8 +30,8 @@ To upgrade Argo Rollouts:
 - Delete the previous version of the controller and apply/install the new one
 
 ```bash
-kubectl delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
-kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl delete --server-side -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
+kubectl apply --server-side -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 ```
 
 - When a new Rollout takes place the new controller will be activated.
