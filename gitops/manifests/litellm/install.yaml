@@ -276,7 +276,7 @@ data:
         port: 6379
 
     general_settings:
-      disable_prisma_schema_update: true
+      # disable_prisma_schema_update: true
       master_key: os.environ/LITELLM_MASTER_KEY
       disable_env_credential_login: true
       num_retries: 0
