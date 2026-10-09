@@ -35,7 +35,7 @@ data:
   AUTH_DISABLED: "false"
   MEM0_TELEMETRY: "false"
   MEM0_DEFAULT_LLM_MODEL: "gpt-4o-mini-or"
-  MEM0_DEFAULT_EMBEDDER_MODEL: "text-embedding-3-small"
+  MEM0_DEFAULT_EMBEDDER_MODEL: "text-embedding-3-small-or"
   PYTHONUNBUFFERED: "1"
 ---
 apiVersion: v1
