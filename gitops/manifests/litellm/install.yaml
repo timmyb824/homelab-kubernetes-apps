@@ -258,7 +258,7 @@ data:
 
       - model_name: text-embedding-3-small-or
         litellm_params:
-          model: openrouter/openai/text-embedding-3-small:batch
+          model: openrouter/openai/text-embedding-3-small
           api_key: os.environ/OPENROUTER_API_KEY
 
     litellm_settings:
