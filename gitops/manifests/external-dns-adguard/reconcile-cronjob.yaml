@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: adguard-rewrite-reconciler
+  namespace: external-dns
+spec:
+  schedule: "*/5 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: reconciler
+              image: python:3.13-slim
+              workingDir: /opt/reconciler
+              command: ["python3", "reconcile-rewrites.py"]
+              env:
+                - name: ADGUARD_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: url
+                - name: ADGUARD_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: user
+                - name: ADGUARD_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: adguard-configuration
+                      key: password
+              volumeMounts:
+                - name: script
+                  mountPath: /opt/reconciler
+              resources:
+                requests:
+                  cpu: 25m
+                  memory: 50Mi
+                limits:
+                  cpu: 100m
+                  memory: 128Mi
+          volumes:
+            - name: script
+              configMap:
+                name: adguard-rewrite-reconciler
