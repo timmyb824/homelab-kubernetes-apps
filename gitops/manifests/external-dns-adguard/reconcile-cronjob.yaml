@@ -15,7 +15,7 @@ spec:
           restartPolicy: OnFailure
           containers:
             - name: reconciler
-              image: python:3.13-slim
+              image: python:3.14-slim
               workingDir: /opt/reconciler
               command:
                 - sh
