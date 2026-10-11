@@ -1,0 +1,372 @@
+# mem0-mcp: thin MCP proxy in front of the mem0 REST API (POST /memories, /search, ...).
+# All extraction/embedding still happens in the mem0 server (LiteLLM-backed), so there's one store
+# and one dashboard. The script lives in the ConfigMap below; deps are pip-installed at startup.
+#
+# Vault (secret/data/argocd) keys required:
+#   MEM0_MCP_AUTH_TOKEN - bearer token MCP clients must send (openssl rand -hex 32)
+#   MEM0_MCP_API_KEY    - mem0 API key created in the dashboard (Settings -> API Keys)
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mem0-mcp-secret
+  namespace: mem0
+  annotations:
+    avp.kubernetes.io/path: "secret/data/argocd"
+type: Opaque
+stringData:
+  MCP_AUTH_TOKEN: <path:secret/data/argocd#MEM0_MCP_AUTH_TOKEN>
+  MEM0_API_KEY: <path:secret/data/argocd#MEM0_MCP_API_KEY>
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mem0-mcp
+  namespace: mem0
+data:
+  MEM0_API_URL: "http://mem0.mem0.svc.cluster.local:8000"
+  MEM0_DEFAULT_USER_ID: "timmyb"
+  MEM0_TIMEOUT_SECONDS: "120"
+  MCP_PORT: "8080"
+  LOG_LEVEL: "INFO"
+  server.py: |
+    #!/usr/bin/env python3
+    """mem0-mcp: a thin MCP proxy in front of a self-hosted mem0 REST server.
+
+    All memory logic (fact extraction, embeddings, dedup) stays in the mem0 server;
+    this process only translates MCP tool calls into REST calls.
+
+    Env:
+      MEM0_API_URL           mem0 REST base URL (default http://mem0:8000)
+      MEM0_API_KEY           mem0 API key, sent as X-API-Key (create one in the dashboard)
+      MEM0_DEFAULT_USER_ID   user_id applied when a tool call doesn't name a scope
+      MCP_AUTH_TOKEN         required bearer token for MCP clients (Authorization: Bearer ...)
+      MCP_PORT               listen port (default 8080)
+    """
+
+    import hmac
+    import logging
+    import os
+    from typing import Any, Optional
+
+    import httpx
+    import uvicorn
+    from mcp.server.mcpserver import MCPServer
+    from mcp.server.mcpserver.exceptions import ToolError
+    from mcp.server.transport_security import TransportSecuritySettings
+    from starlette.requests import Request
+    from starlette.responses import JSONResponse, PlainTextResponse
+
+    API_URL = os.environ.get("MEM0_API_URL", "http://mem0:8000").rstrip("/")
+    API_KEY = os.environ.get("MEM0_API_KEY", "")
+    DEFAULT_USER_ID = os.environ.get("MEM0_DEFAULT_USER_ID", "default")
+    AUTH_TOKEN = os.environ.get("MCP_AUTH_TOKEN", "")
+    PORT = int(os.environ.get("MCP_PORT", "8080"))
+    TIMEOUT = float(os.environ.get("MEM0_TIMEOUT_SECONDS", "120"))  # add_memory runs LLM extraction
+
+    logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+    log = logging.getLogger("mem0-mcp")
+
+    if not AUTH_TOKEN:
+        raise SystemExit("MCP_AUTH_TOKEN must be set; refusing to start an unauthenticated server")
+
+    client = httpx.AsyncClient(
+        base_url=API_URL,
+        headers={"X-API-Key": API_KEY} if API_KEY else {},
+        timeout=TIMEOUT,
+    )
+
+    mcp = MCPServer(
+        name="mem0",
+        instructions=(
+            "Persistent long-term memory shared across Claude sessions and devices. "
+            "At the start of a task, call search_memories for context relevant to it before asking the "
+            "user to repeat themselves. Call add_memory when you learn durable facts: preferences, "
+            "decisions, project conventions, environment details, or anything the user asks you to remember. "
+            "Use update_memory/delete_memory when stored facts become wrong. Memories default to the "
+            "owner's user_id; pass agent_id or run_id only when you need a narrower scope."
+        ),
+    )
+
+
+    def _scope(user_id: Optional[str], agent_id: Optional[str], run_id: Optional[str]) -> dict[str, str]:
+        scope = {k: v for k, v in {"user_id": user_id, "agent_id": agent_id, "run_id": run_id}.items() if v}
+        return scope or {"user_id": DEFAULT_USER_ID}
+
+
+    async def _call(method: str, path: str, **kwargs: Any) -> Any:
+        try:
+            resp = await client.request(method, path, **kwargs)
+        except httpx.HTTPError as e:
+            raise ToolError(f"mem0 API unreachable: {e}") from e
+        if resp.status_code >= 400:
+            try:
+                detail = resp.json().get("detail", resp.text)
+            except ValueError:
+                detail = resp.text
+            raise ToolError(f"mem0 API {method} {path} failed ({resp.status_code}): {detail}")
+        return resp.json() if resp.content else {"ok": True}
+
+
+    @mcp.tool()
+    async def add_memory(
+        content: str,
+        user_id: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        run_id: Optional[str] = None,
+        metadata: Optional[dict[str, Any]] = None,
+        infer: bool = True,
+    ) -> Any:
+        """Store a memory. `content` is free text; mem0 extracts atomic facts from it and merges them with
+        existing memories (infer=True). Set infer=False to store the text verbatim. Defaults to the owner's user_id."""
+        body: dict[str, Any] = {
+            "messages": [{"role": "user", "content": content}],
+            **_scope(user_id, agent_id, run_id),
+            "infer": infer,
+        }
+        if metadata:
+            body["metadata"] = metadata
+        return await _call("POST", "/memories", json=body)
+
+
+    @mcp.tool()
+    async def search_memories(
+        query: str,
+        user_id: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        run_id: Optional[str] = None,
+        top_k: int = 10,
+        threshold: Optional[float] = None,
+    ) -> Any:
+        """Semantic search over stored memories. Returns the most relevant memories with ids and scores."""
+        body: dict[str, Any] = {"query": query, "filters": _scope(user_id, agent_id, run_id), "top_k": top_k}
+        if threshold is not None:
+            body["threshold"] = threshold
+        return await _call("POST", "/search", json=body)
+
+
+    @mcp.tool()
+    async def list_memories(
+        user_id: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        run_id: Optional[str] = None,
+        top_k: int = 100,
+    ) -> Any:
+        """List stored memories for a scope (defaults to the owner's user_id), without a search query."""
+        return await _call("GET", "/memories", params={**_scope(user_id, agent_id, run_id), "top_k": top_k})
+
+
+    @mcp.tool()
+    async def get_memory(memory_id: str) -> Any:
+        """Fetch a single memory by id."""
+        return await _call("GET", f"/memories/{memory_id}")
+
+
+    @mcp.tool()
+    async def update_memory(memory_id: str, text: str) -> Any:
+        """Replace the text of an existing memory (it is re-embedded)."""
+        return await _call("PUT", f"/memories/{memory_id}", json={"text": text})
+
+
+    @mcp.tool()
+    async def delete_memory(memory_id: str) -> Any:
+        """Delete a single memory by id."""
+        return await _call("DELETE", f"/memories/{memory_id}")
+
+
+    @mcp.tool()
+    async def memory_history(memory_id: str) -> Any:
+        """Show the change history (adds/updates/deletes) of a memory."""
+        return await _call("GET", f"/memories/{memory_id}/history")
+
+
+    @mcp.custom_route("/healthz", methods=["GET"], include_in_schema=False)
+    async def healthz(_: Request) -> PlainTextResponse:
+        return PlainTextResponse("ok")
+
+
+    class BearerAuth:
+        """Require `Authorization: Bearer <MCP_AUTH_TOKEN>` on everything except /healthz."""
+
+        def __init__(self, app):
+            self.app = app
+            self.expected = f"Bearer {AUTH_TOKEN}".encode()
+
+        async def __call__(self, scope, receive, send):
+            if scope["type"] == "http" and scope.get("path") != "/healthz":
+                supplied = dict(scope.get("headers") or []).get(b"authorization", b"")
+                if not hmac.compare_digest(supplied, self.expected):
+                    await JSONResponse({"error": "unauthorized"}, status_code=401,
+                                       headers={"WWW-Authenticate": "Bearer"})(scope, receive, send)
+                    return
+            await self.app(scope, receive, send)
+
+
+    app = BearerAuth(
+        mcp.streamable_http_app(
+            streamable_http_path="/mcp",
+            stateless_http=True,
+            json_response=True,
+            host="0.0.0.0",
+            # Reached through Traefik/Cloudflare with varying Host headers; auth is the bearer token.
+            transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+        )
+    )
+
+    if __name__ == "__main__":
+        log.info("mem0-mcp proxying %s (default user_id=%s) on :%d/mcp", API_URL, DEFAULT_USER_ID, PORT)
+        uvicorn.run(app, host="0.0.0.0", port=PORT, proxy_headers=True, forwarded_allow_ips="*")
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mem0-mcp
+  namespace: mem0
+  labels:
+    app.kubernetes.io/name: mem0-mcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mem0-mcp
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mem0-mcp
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65534
+        runAsGroup: 65534
+        fsGroup: 65534
+      containers:
+        - name: mem0-mcp
+          image: python:3.13-slim
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh", "-c"]
+          args:
+            - >-
+              pip install --quiet --no-cache-dir --disable-pip-version-check --target /deps
+              "mcp==2.3.0" "httpx==0.28.1" "uvicorn==0.54.0"
+              && exec python /app/server.py
+          env:
+            - name: PYTHONPATH
+              value: /deps
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: HOME
+              value: /tmp
+          envFrom:
+            - configMapRef:
+                name: mem0-mcp
+            - secretRef:
+                name: mem0-mcp-secret
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 36
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 25m
+              memory: 96Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: app
+              mountPath: /app
+              readOnly: true
+            - name: deps
+              mountPath: /deps
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: app
+          configMap:
+            name: mem0-mcp
+            items:
+              - key: server.py
+                path: server.py
+        - name: deps
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mem0-mcp
+  namespace: mem0
+spec:
+  selector:
+    app.kubernetes.io/name: mem0-mcp
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mem0-mcp-internal
+  namespace: mem0
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: traefik.local.timmybtech.com
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mem0-mcp.local.timmybtech.com`)
+      kind: Rule
+      services:
+        - name: mem0-mcp
+          port: 8080
+  tls:
+    secretName: local-timmybtech-com-tls
+---
+# Public via Cloudflare tunnel; only /mcp is exposed (bearer token enforced by the server).
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mem0-mcp-public
+  namespace: mem0
+  annotations:
+    kubernetes.io/ingress.class: traefik-external
+    external-dns.kubernetes.io/enabled: "true"
+    external-dns.kubernetes.io/target: <path:secret/data/cloudflared#HOMELAB_TUNNEL_ID>
+    external-dns.kubernetes.io/cloudflare-proxied: "true"
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`mem0-mcp.timmybtech.com`) && PathPrefix(`/mcp`)
+      kind: Rule
+      services:
+        - name: mem0-mcp
+          port: 8080
+  tls:
+    secretName: timmybtech-com-tls
