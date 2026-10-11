@@ -38,7 +38,7 @@ spec:
     spec:
       containers:
         - name: degoog
-          image: ghcr.io/degoog-org/degoog:1.0.0
+          image: ghcr.io/degoog-org/degoog:1.1.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4444
