@@ -72,11 +72,11 @@ spec:
             initialDelaySeconds: 20
           resources:
             requests:
-              memory: "64Mi"
+              memory: "256Mi"
               cpu: "256m"
             limits:
-              memory: "128Mi"
-              cpu: "512m"
+              memory: "768Mi"
+              cpu: "1"
         - name: guacd
           image: guacamole/guacd:1.6.0
           resources:
