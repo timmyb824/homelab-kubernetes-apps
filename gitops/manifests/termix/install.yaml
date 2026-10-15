@@ -41,12 +41,31 @@ spec:
           env:
             - name: PORT
               value: "8080"
+            - name: GUACD_HOST
+              value: "127.0.0.1"
+            - name: GUACD_TUNNEL_HOST
+              value: "127.0.0.1"
+            - name: GUACD_RECORDING_PATH
+              value: "/termix-data/session_recordings/guacamole"
+            - name: GUACD_DRIVE_PATH
+              value: "/termix-data/rdp-drive"
+            - name: DATABASE_DIALECT
+              value: "postgres"
+            - name: DATABASE_URL
+              value: "<path:secret/data/database#PG_CONN_STRING>/termix"
+            - name: REDIS_URL
+              value: "<path:secret/data/database#REDIS_CONN_STRING>/6"
           ports:
             - name: http
               containerPort: 8080
           volumeMounts:
             - name: data
               mountPath: /app/data
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 20
           resources:
             requests:
               memory: "64Mi"
@@ -54,6 +73,18 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "512m"
+        - name: guacd
+          image: guacamole/guacd:1.6.0
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "256m"
+            limits:
+              memory: "128Mi"
+              cpu: "512m"
+          volumeMounts:
+            - name: data
+              mountPath: /termix-data
       volumes:
         - name: data
           persistentVolumeClaim:
