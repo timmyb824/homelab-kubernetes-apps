@@ -441,6 +441,11 @@ data:
             href: https://mealie.local.timmybtech.com/
             namespace: mealie
             app: mealie
+        - Mem0:
+            icon: sh-mem0.png
+            href: https://mem0.local.timmybtech.com/
+            namespace: mem0
+            app: mem0
         - n8n:
             icon: n8n.png
             href: https://n8n.timmybtech.com/
