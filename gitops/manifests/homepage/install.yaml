@@ -442,7 +442,7 @@ data:
             namespace: mealie
             app: mealie
         - Mem0:
-            icon: sh-mem0.png
+            icon: sh-claude.png
             href: https://mem0.local.timmybtech.com/
             namespace: mem0
             app: mem0
