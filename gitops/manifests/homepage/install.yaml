@@ -587,13 +587,6 @@ data:
                 url: https://grafana2.timmybtech.com
                 username: <GRAFANA_USER>
                 password: <GRAFANA_PASSWORD>
-        - Speedtest-tracker:
-            icon: speedtest-tracker.png
-            href: https://speedtest.local.timmybtech.com/
-            ping: http://192.168.86.174:8083
-            widget:
-                type: speedtest
-                url: http://192.168.86.174:8083
         - Prometheus:
             icon: prometheus.png
             href: http://prometheus.local.timmybtech.com/
@@ -662,6 +655,10 @@ data:
             icon: loki.png
             href: https://loki.local.timmybtech.com/
             ping: http://192.168.86.146:3100/loki/api/v1/status/buildinfo
+        - Netronome:
+            icon: sh-netronome.png
+            href: https://netronome.local.timmybtech.com/
+            ping: http://192.168.86.53:7575
         - Nutalert:
             icon: sh-nutalert.png
             href: https://nutalert.local.timmybtech.com/
