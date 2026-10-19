@@ -320,6 +320,12 @@ providers:
             entrypoints:
               - websecure
             tls: {}
+          netronome:
+            rule: Host(`netronome.local.timmybtech.com`)
+            service: netronome
+            entrypoints:
+              - websecure
+            tls: {}
         services:
           uptime-kuma:
             loadBalancer:
@@ -466,6 +472,10 @@ providers:
             loadBalancer:
               servers:
                 - url: http://192.168.86.53:8081
+          netronome:
+            loadBalancer:
+              servers:
+                - url: http://192.168.86.53:7575
         serversTransports:
           nas-transport:
             insecureSkipVerify: true
