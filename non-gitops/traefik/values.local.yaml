@@ -122,12 +122,6 @@ providers:
             entrypoints:
               - websecure
             tls: {}
-          speedtest:
-            rule: Host(`speedtest.local.timmybtech.com`)
-            service: speedtest
-            entrypoints:
-              - websecure
-            tls: {}
           nas:
             rule: Host(`nas.local.timmybtech.com`)
             service: nas
@@ -335,10 +329,6 @@ providers:
             loadBalancer:
               servers:
                 - url: https://authentik.timmybtech.com/outpost.goauthentik.io
-          speedtest:
-            loadBalancer:
-              servers:
-                - url: http://192.168.86.174:8083
           archivebox:
             loadBalancer:
               servers:
