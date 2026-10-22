@@ -320,6 +320,12 @@ providers:
             entrypoints:
               - websecure
             tls: {}
+          nightingale:
+            rule: Host(`n9e.local.timmybtech.com`)
+            service: nightingale
+            entrypoints:
+              - websecure
+            tls: {}
         services:
           uptime-kuma:
             loadBalancer:
@@ -466,6 +472,10 @@ providers:
             loadBalancer:
               servers:
                 - url: http://192.168.86.53:7575
+          nightingale:
+            loadBalancer:
+              servers:
+                - url: http://192.168.86.53:17000
         serversTransports:
           nas-transport:
             insecureSkipVerify: true
