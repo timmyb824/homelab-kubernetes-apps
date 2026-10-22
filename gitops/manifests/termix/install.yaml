@@ -36,7 +36,7 @@ spec:
     spec:
       containers:
         - name: termix
-          image: ghcr.io/termix-ssh/termix:26.10.2
+          image: ghcr.io/termix-ssh/termix:26.10.5
           imagePullPolicy: Always
           env:
             - name: PUID
