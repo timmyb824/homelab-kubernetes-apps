@@ -52,7 +52,7 @@ spec:
         runAsGroup: 0
       containers:
         - name: degoog-mcp
-          image: ghcr.io/degoog-org/mcp:0.4.0
+          image: ghcr.io/degoog-org/mcp:0.4.1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 4443
