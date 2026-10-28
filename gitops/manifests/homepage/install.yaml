@@ -659,6 +659,10 @@ data:
             icon: sh-netronome.png
             href: https://netronome.local.timmybtech.com/
             ping: http://192.168.86.53:7575
+        - Nightingale:
+            icon: sh-nightingale-alerting.png
+            href: https://n9e.local.timmybtech.com
+            ping: https://192.168.86.53:17000
         - Nutalert:
             icon: sh-nutalert.png
             href: https://nutalert.local.timmybtech.com/
