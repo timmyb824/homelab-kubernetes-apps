@@ -69,7 +69,7 @@ spec:
               value: http
             - name: N8N_PORT
               value: "5678"
-            - name: WEBHOOK_URL
+            - name: N8N_WEBHOOK_URL
               value: https://n8n.timmybtech.com
             - name: N8N_METRICS
               value: "true"
