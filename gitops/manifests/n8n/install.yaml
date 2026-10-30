@@ -65,8 +65,6 @@ spec:
               value: <path:secret/data/postgres_db#USER>
             - name: DB_POSTGRESDB_PASSWORD
               value: <path:secret/data/postgres_db#PASSWORD>
-            - name: N8N_PROTOCOL
-              value: http
             - name: N8N_PORT
               value: "5678"
             - name: N8N_WEBHOOK_URL
