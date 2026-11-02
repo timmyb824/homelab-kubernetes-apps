@@ -54,7 +54,7 @@ spec:
       enableServiceLinks: false
       containers:
         - name: bytestash
-          image: ghcr.io/jordan-dalby/bytestash:1.6.0
+          image: ghcr.io/jordan-dalby/bytestash:1.6.1
           imagePullPolicy: Always
           ports:
             - name: http
