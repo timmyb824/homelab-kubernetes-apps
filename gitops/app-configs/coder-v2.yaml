@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: coder
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  annotations: {}
+spec:
+  destination:
+    namespace: coder
+    server: "https://kubernetes.default.svc"
+  project: default
+  sources:
+    - repoURL: https://helm.coder.com/v2
+      targetRevision: 2.39.0
+      chart: coder
+      helm:
+        releaseName: coder
+        values: |
+          coder:
+            env:
+              - name: CODER_PG_CONNECTION_URL
+                valueFrom:
+                  secretKeyRef:
+                    name: coder-db-url
+                    key: url
+              - name: CODER_OAUTH2_GITHUB_DEFAULT_PROVIDER_ENABLE
+                value: "false"
+              - name: CODER_ACCESS_URL
+                value: "https://coder.local.timmybtech.com"
+              - name: CODER_PROMETHEUS_ENABLE
+                value: "true"
+            replicaCount: 1
+            resources:
+              limits:
+                cpu: 1000m
+                memory: 2048Mi
+              requests:
+                cpu: 500m
+                memory: 1024Mi
+            nodeSelector: {}
+
+    - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
+      path: "gitops/manifests/coder-v2"
+      targetRevision: HEAD
+
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
