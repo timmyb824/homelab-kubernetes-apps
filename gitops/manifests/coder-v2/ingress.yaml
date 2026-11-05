@@ -16,7 +16,7 @@ spec:
       kind: Rule
       services:
         - name: coder
-          port: 8080
+          port: 80
     - match: Host(`coder.local.timmybtech.com`) && PathPrefix(`/metrics`)
       kind: Rule
       services:
