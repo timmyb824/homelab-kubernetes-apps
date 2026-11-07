@@ -12,33 +12,36 @@ spec:
   destination:
     namespace: default
     server: "https://kubernetes.default.svc"
-  source:
-    repoURL: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
-    targetRevision: 4.0.18
-    chart: nfs-subdir-external-provisioner
-    helm:
-      releaseName: nfs-synologynas
-      values: |
-        nfs:
-          server: 192.168.86.44
-          path: /volume1/kubernetes
+  sources:
+    - repoURL: https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+      targetRevision: 4.0.18
+      chart: nfs-subdir-external-provisioner
+      helm:
+        releaseName: nfs-synologynas
+        values: |
+          nfs:
+            server: 192.168.86.44
+            path: /volume1/kubernetes
 
-        storageClass:
-          name: nfs-csi-synologynas
-          defaultClass: true
-          reclaimPolicy: Delete
-          accessModes: ["ReadWriteMany"]
-          volumeBindingMode: Immediate
-          archiveOnDelete: true
-          allowVolumeExpansion: true
+          storageClass:
+            name: nfs-csi-synologynas
+            defaultClass: true
+            reclaimPolicy: Delete
+            accessModes: ["ReadWriteMany"]
+            volumeBindingMode: Immediate
+            archiveOnDelete: true
+            allowVolumeExpansion: true
 
-        resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
-            cpu: 200m
-            memory: 128Mi
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+    - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
+      targetRevision: HEAD
+      path: gitops/manifests/nfs-synologynas
   syncPolicy:
     automated:
       prune: true

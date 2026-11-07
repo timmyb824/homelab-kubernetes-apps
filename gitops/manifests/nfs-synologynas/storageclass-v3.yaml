@@ -1,0 +1,17 @@
+---
+# Sibling of nfs-csi-synologynas for workloads that misbehave on NFSv4.0
+# (e.g. Coder workspace home volumes: spurious EACCES, directory reads that never finish).
+# Same provisioner, but mounts with NFSv3. NOT the default class.
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: nfs-synologynas-v3
+provisioner: cluster.local/nfs-synologynas-nfs-subdir-external-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
+mountOptions:
+  - nfsvers=3
+  - hard
+parameters:
+  archiveOnDelete: "true"
