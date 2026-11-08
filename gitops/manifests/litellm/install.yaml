@@ -161,6 +161,12 @@ data:
       require_auth_for_metrics_endpoint: false
       telemetry: false
       drop_params: true
+      num_retries: 2
+      retry_after: 5
+      fallbacks:
+        - {"gemma-4-31b-it-free-or": ["glm-5.3-flash-or", "deepseek-v4.1-flash-or"]}
+        - {"flint-v1.0-free-or": ["glm-5.3-flash-or", "deepseek-v4.1-flash-or"]}
+        - {"north-mini-code-free-or": ["glm-5.3-flash-or", "deepseek-v4.1-flash-or"]}
       cache: true
       enable_redis_auth_cache: true
       cache_params:
