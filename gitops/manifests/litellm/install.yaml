@@ -11,250 +11,101 @@ metadata:
 data:
   config.yaml: |
     model_list:
-      - model_name: gpt-4o
+      # OPENROUTER MODELS
+      - model_name: glm-5.3-flash-or
         litellm_params:
-          model: openai/gpt-4o
-          api_key: os.environ/OPENAI_API_KEY
-
-      - model_name: gpt-4o-mini
-        litellm_params:
-          model: openai/gpt-4o-mini
-          api_key: os.environ/OPENAI_API_KEY
-
-      - model_name: gpt-5.3-codex
-        litellm_params:
-          model: openai/gpt-5.3-codex
-          api_key: os.environ/OPENAI_API_KEY
-
-      - model_name: gpt-5.1-codex
-        litellm_params:
-          model: openai/gpt-5.1-codex
-          api_key: os.environ/OPENAI_API_KEY
-
-      - model_name: claude-sonnet
-        litellm_params:
-          model: anthropic/claude-sonnet-4-6
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-sonnet-4-6
-        litellm_params:
-          model: anthropic/claude-sonnet-4-6
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-haiku
-        litellm_params:
-          model: anthropic/claude-haiku-4-5
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-haiku-4-5-20251001
-        litellm_params:
-          model: anthropic/claude-haiku-4-5
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-opus
-        litellm_params:
-          model: anthropic/claude-opus-4-6
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-opus-4-6
-        litellm_params:
-          model: anthropic/claude-opus-4-6
-          api_key: os.environ/ANTHROPIC_API_KEY
-          rpm: 4
-          tpm: 25000
-
-      - model_name: claude-opus-or
-        litellm_params:
-          model: openrouter/anthropic/claude-opus-4-6
+          model: openrouter/z-ai/glm-5.3-flash
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5.2-or
+      - model_name: anthropic/claude-opus-5.5-or
         litellm_params:
-          model: openrouter/openai/gpt-5.2
+          model: openrouter/anthropic/claude-opus-5.5
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5-codex-or
+      - model_name: gpt-6-astra-or
         litellm_params:
-          model: openrouter/openai/gpt-5-codex
+          model: openrouter/openai/gpt-6-astra
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5.1-codex-or
+      - model_name: openrouter/auto
         litellm_params:
-          model: openrouter/openai/gpt-5.1-codex
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.00000125      # $1.25/1M
-          output_cost_per_token: 0.00001      # $10/1M
-
-      - model_name: gpt-5.1-codex-mini-or
-        litellm_params:
-          model: openrouter/openai/gpt-5.1-codex-mini
+          model: openrouter/auto
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5.2-codex-or
+      - model_name: openrouter/auto-code
         litellm_params:
-          model: openrouter/openai/gpt-5.2-codex
+          model: openrouter/auto-code
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5.3-codex-or
+      - model_name: gemini-flash-latest-or
         litellm_params:
-          model: openrouter/openai/gpt-5.3-codex
+          model: openrouter/~google/gemini-flash-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-4o-or
+      - model_name: glm-latest-or
         litellm_params:
-          model: openrouter/openai/gpt-4o
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.0000025      # $2.5/1M
-          output_cost_per_token: 0.00001      # $10/1M
-
-      - model_name: gpt-4o-mini-or
-        litellm_params:
-          model: openrouter/openai/gpt-4o-mini
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.00000015      # $.15/1M
-          output_cost_per_token: 0.0000006     # $.60/1M
-
-      - model_name: claude-sonnet-4.5-or
-        litellm_params:
-          model: openrouter/anthropic/claude-sonnet-4-5
+          model: openrouter/~z-ai/glm-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: claude-haiku-4.5-or
+      - model_name: gpt-terra-latest-or
         litellm_params:
-          model: openrouter/anthropic/claude-haiku-4-5
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.000001      # $1/1M
-          output_cost_per_token: 0.000005     # $5/1M
-
-      - model_name: claude-sonnet-4.6-or
-        litellm_params:
-          model: openrouter/anthropic/claude-sonnet-4-6
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.000003      # $3/1M
-          output_cost_per_token: 0.000015    # $15/1M
-
-      - model_name: claude-sonnet-4-or
-        litellm_params:
-          model: openrouter/anthropic/claude-sonnet-4
+          model: openrouter/~openai/gpt-terra-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-5.4-nano-or
+      - model_name: gpt-luna-latest-or
         litellm_params:
-          model: openrouter/openai/gpt-5.4-nano
+          model: openrouter/~openai/gpt-luna-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gpt-4.1-mini-or
+      - model_name: gpt-mini-latest-or
         litellm_params:
-          model: openrouter/openai/gpt-4.1-mini
+          model: openrouter/~openai/gpt-mini-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: qwen3-max-or
+      - model_name: gpt-chat-latest-or
         litellm_params:
-          model: openrouter/qwen/qwen3-max
+          model: openrouter/openai/gpt-chat-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: qwen3.6-plus-or
+      - model_name: kimi-latest-or
         litellm_params:
-          model: openrouter/qwen/qwen3.6-plus
+          model: openrouter/~moonshotai/kimi-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: qwen3.5-plus-or
+      - model_name: claude-haiku-latest-or
         litellm_params:
-          model: openrouter/qwen/qwen3.5-plus
+          model: openrouter/~anthropic/claude-haiku-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: qwen3.5-flash-or
+      - model_name: claude-sonnet-latest-or
         litellm_params:
-          model: openrouter/qwen/qwen3.5-flash
+          model: openrouter/~anthropic/claude-sonnet-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gemini-3.1-pro-or
+      - model_name: gemma-4-31b-it:free-or
         litellm_params:
-          model: openrouter/google/gemini-3.1-pro
+          model: openrouter/google/gemma-4-31b-it:free
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gemini-3-flash-or
+      - model_name: flint-v1.0:free-or
         litellm_params:
-          model: openrouter/google/gemini-3-flash
+          model: openrouter/recursive/flint-v1.0:free
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gemini-3.1-flash-lite-or
+      - model_name: north-mini-code:free-or
         litellm_params:
-          model: openrouter/google/gemini-3.1-flash-lite
+          model: openrouter/cohere/north-mini-code:free
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: mistral-small-3-or
+      - model_name: gemini-3.1-flash-image-or
         litellm_params:
-          model: openrouter/mistralai/mistral-small-3
+          model: openrouter/google/gemini-3.1-flash-image
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: mistral-medium-or
+      - model_name: deepseek-v4.1-flash-or
         litellm_params:
-          model: openrouter/mistralai/mistral-medium
+          model: openrouter/deepseek/deepseek-v4.1-flash
           api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: mistral-large-2-or
-        litellm_params:
-          model: openrouter/mistralai/mistral-large-2
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: grok-code-fast-1-or
-        litellm_params:
-          model: openrouter/x-ai/grok-code-fast-1
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: grok-3-mini-or
-        litellm_params:
-          model: openrouter/x-ai/grok-3-mini
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: grok-4-or
-        litellm_params:
-          model: openrouter/x-ai/grok-4
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: kimi-k2.6-or
-        litellm_params:
-          model: openrouter/moonshot-ai/kimi-k2.6
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: kimi-k2.5-or
-        litellm_params:
-          model: openrouter/moonshot-ai/kimi-k2.5
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: kimi-k2.5-fw-or
-        litellm_params:
-          model: openrouter/moonshot-ai/kimi-k2.5-fw
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: kimi-k2-or
-        litellm_params:
-          model: openrouter/moonshot-ai/kimi-k2
-          api_key: os.environ/OPENROUTER_API_KEY
-
-      - model_name: gemini-3.5-flash-or
-        litellm_params:
-          model: openrouter/google/gemini-3.5-flash
-          api_key: os.environ/OPENROUTER_API_KEY
-        model_info:
-          input_cost_per_token: 0.0000015     # $1.5/1M
-          output_cost_per_token: 0.000009     # $9.0/1M
 
       - model_name: text-embedding-3-small-or
         litellm_params:
@@ -262,6 +113,48 @@ data:
           api_key: os.environ/OPENROUTER_API_KEY
         model_info:
           mode: embedding
+
+      # ANTHROPIC MODELS
+      - model_name: claude-haiku-5-5
+        litellm_params:
+          model: anthropic/claude-haiku-5-5
+          api_key: os.environ/ANTHROPIC_API_KEY
+
+      - model_name: claude-sonnet-5-5
+        litellm_params:
+          model: anthropic/claude-sonnet-5-5
+          api_key: os.environ/ANTHROPIC_API_KEY
+
+      - model_name: claude-opus-5-5
+        litellm_params:
+          model: anthropic/claude-opus-5-5
+          api_key: os.environ/ANTHROPIC_API_KEY
+
+      # OPENAI MODELS
+      - model_name: gpt-6-astra
+        litellm_params:
+          model: openai/gpt-6-astra
+          api_key: os.environ/OPENAI_API_KEY
+
+      - model_name: gpt-5.6-terra
+        litellm_params:
+          model: openai/gpt-5.6-terra
+          api_key: os.environ/OPENAI_API_KEY
+
+      - model_name: gpt-5.6-luna
+        litellm_params:
+          model: openai/gpt-5.6-luna
+          api_key: os.environ/OPENAI_API_KEY
+
+      - model_name: chat-latest
+        litellm_params:
+          model: openai/chat-latest
+          api_key: os.environ/OPENAI_API_KEY
+
+      - model_name: gpt-6.1-sol
+        litellm_params:
+          model: openai/gpt-6.1-sol
+          api_key: os.environ/OPENAI_API_KEY
 
     litellm_settings:
       success_callback: ["prometheus", "otel"]
