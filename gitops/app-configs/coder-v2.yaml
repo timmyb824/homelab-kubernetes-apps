@@ -35,10 +35,10 @@ spec:
             resources:
               limits:
                 cpu: 1000m
-                memory: 2048Mi
+                memory: 4096Mi
               requests:
                 cpu: 500m
-                memory: 1024Mi
+                memory: 2048Mi
             nodeSelector: {}
 
     - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
