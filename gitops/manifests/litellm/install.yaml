@@ -17,7 +17,7 @@ data:
           model: openrouter/z-ai/glm-5.3-flash
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: anthropic/claude-opus-5.5-or
+      - model_name: claude-opus-5.5-or
         litellm_params:
           model: openrouter/anthropic/claude-opus-5.5
           api_key: os.environ/OPENROUTER_API_KEY
@@ -82,17 +82,17 @@ data:
           model: openrouter/~anthropic/claude-sonnet-latest
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: gemma-4-31b-it:free-or
+      - model_name: gemma-4-31b-it-free-or
         litellm_params:
           model: openrouter/google/gemma-4-31b-it:free
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: flint-v1.0:free-or
+      - model_name: flint-v1.0-free-or
         litellm_params:
           model: openrouter/recursive/flint-v1.0:free
           api_key: os.environ/OPENROUTER_API_KEY
 
-      - model_name: north-mini-code:free-or
+      - model_name: north-mini-code-free-or
         litellm_params:
           model: openrouter/cohere/north-mini-code:free
           api_key: os.environ/OPENROUTER_API_KEY
