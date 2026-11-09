@@ -397,7 +397,7 @@ data:
             namespace: bytestash
             app: bytestash
         - Coder:
-            icon: podman.png
+            icon: sh-coder.png
             href: https://coder.local.timmybtech.com/
             namespace: coder
             app: coder
@@ -441,11 +441,6 @@ data:
             href: https://manyfold.local.timmybtech.com/
             namespace: manyfold
             app: manyfold
-        - Mealie:
-            icon: mealie.png
-            href: https://mealie.local.timmybtech.com/
-            namespace: mealie
-            app: mealie
         - Mem0:
             icon: sh-claude.png
             href: https://mem0.local.timmybtech.com/
@@ -456,11 +451,6 @@ data:
             href: https://n8n.timmybtech.com/
             namespace: n8n
             app: n8n
-        - OpenFaaS:
-            icon: kubernetes.png
-            href: https://openfaas.local.timmybtech.com/
-            namespace: openfaas
-            app: gateway
         - Open-WebUI:
             icon: sh-open-webui.png
             href: https://openui.local.timmybtech.com/
