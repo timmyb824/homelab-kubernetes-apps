@@ -396,6 +396,11 @@ data:
             href: https://bytestash.timmybtech.com/
             namespace: bytestash
             app: bytestash
+        - Coder:
+            icon: podman.png
+            href: https://coder.local.timmybtech.com/
+            namespace: coder
+            app: coder
         - Cupdate:
             icon: podman.png
             href: https://cupdate.local.timmybtech.com/
