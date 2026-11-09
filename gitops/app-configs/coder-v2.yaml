@@ -39,8 +39,7 @@ spec:
               requests:
                 cpu: 500m
                 memory: 2048Mi
-            nodeSelector:
-              kubernetes.io/hostname: k3s-0-worker
+            nodeSelector: {}
 
     - repoURL: "https://github.com/timmyb824/homelab-kubernetes-apps.git"
       path: "gitops/manifests/coder-v2"
