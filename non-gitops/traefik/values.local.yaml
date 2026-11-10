@@ -326,6 +326,12 @@ providers:
             entrypoints:
               - websecure
             tls: {}
+          pricebuddy:
+            rule: Host(`pricebuddy.local.timmybtech.com`)
+            service: pricebuddy
+            entrypoints:
+              - websecure
+            tls: {}
         services:
           uptime-kuma:
             loadBalancer:
@@ -476,6 +482,10 @@ providers:
             loadBalancer:
               servers:
                 - url: http://192.168.86.53:17000
+          pricebuddy:
+            loadBalancer:
+              servers:
+                - url: http://192.168.86.53:8082
         serversTransports:
           nas-transport:
             insecureSkipVerify: true

@@ -690,6 +690,10 @@ data:
             icon: sh-patchmon.png
             href: https://patchmon.local.timmybtech.com/
             ping: http://192.168.86.40:3000
+        - Pricebuddy:
+            icon: sh-pricebuddy.png
+            href: https://pricebuddy.local.timmybtech.com/
+            ping: http://192.168.86.53:8082
         - Redis Commander:
             icon: sh-redis-commander.png
             href: https://redis-commander.local.timmybtech.com/
