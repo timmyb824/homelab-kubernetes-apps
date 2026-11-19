@@ -332,6 +332,12 @@ providers:
             entrypoints:
               - websecure
             tls: {}
+          project-nomad:
+            rule: Host(`nomad.local.timmybtech.com`)
+            service: project-nomad
+            entrypoints:
+              - websecure
+            tls: {}
         services:
           uptime-kuma:
             loadBalancer:
@@ -486,6 +492,10 @@ providers:
             loadBalancer:
               servers:
                 - url: http://192.168.86.53:8082
+          project-nomad:
+            loadBalancer:
+              servers:
+                - url: http://192.168.86.53:8084
         serversTransports:
           nas-transport:
             insecureSkipVerify: true
