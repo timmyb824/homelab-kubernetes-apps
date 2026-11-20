@@ -694,6 +694,10 @@ data:
             icon: sh-pricebuddy.png
             href: https://pricebuddy.local.timmybtech.com/
             ping: http://192.168.86.53:8082
+        - Project-Nomad:
+            icon: sh-project-nomad.png
+            href: http://192.168.86.53:8084/
+            ping: http://192.168.86.53:8084
         - Redis Commander:
             icon: sh-redis-commander.png
             href: https://redis-commander.local.timmybtech.com/
