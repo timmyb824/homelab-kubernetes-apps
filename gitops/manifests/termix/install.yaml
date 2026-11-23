@@ -64,10 +64,10 @@ spec:
             initialDelaySeconds: 20
           resources:
             requests:
-              memory: "256Mi"
+              memory: "512Mi"
               cpu: "256m"
             limits:
-              memory: "768Mi"
+              memory: "1Gi"
               cpu: "1"
       volumes:
         - name: data
