@@ -227,7 +227,7 @@ spec:
     spec:
       containers:
         - name: litellm
-          image: ghcr.io/berriai/litellm:1.110.2
+          image: ghcr.io/berriai/litellm:1.110.3
           imagePullPolicy: Always
           args:
             - "--config"
