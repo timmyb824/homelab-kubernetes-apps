@@ -16,6 +16,16 @@ spec:
     requests:
       storage: 8Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: termix-secret
+  namespace: termix
+type: Opaque
+stringData:
+  DATABASE_URL: "<path:secret/data/database#PG_CONN_STRING>/termix"
+  REDIS_URL: "<path:secret/data/database#REDIS_CONN_STRING>/6"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -38,6 +48,9 @@ spec:
         - name: termix
           image: ghcr.io/termix-ssh/termix:26.11.3
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: termix-secret
           env:
             - name: PUID
               value: "0"
@@ -47,10 +60,6 @@ spec:
               value: "8080"
             - name: DATABASE_DIALECT
               value: "postgres"
-            - name: DATABASE_URL
-              value: "<path:secret/data/database#PG_CONN_STRING>/termix"
-            - name: REDIS_URL
-              value: "<path:secret/data/database#REDIS_CONN_STRING>/6"
           ports:
             - name: http
               containerPort: 8080

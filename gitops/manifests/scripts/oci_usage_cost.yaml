@@ -1,18 +1,20 @@
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: oci-pem
   namespace: scripts
-data:
+type: Opaque
+stringData:
   oci.pem: |
     <path:secret/data/scripts#OCI_PEM>
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: oci-config
   namespace: scripts
-data:
+type: Opaque
+stringData:
   config: |
     <path:secret/data/scripts#OCI_CONFIG>
 ---
@@ -30,15 +32,10 @@ spec:
           containers:
             - name: oci-usage-cost
               image: registry.local.timmybtech.com/oci-usage-cost:latest
+              envFrom:
+                - secretRef:
+                    name: scripts-secrets
               env:
-                - name: N8N_WEBHOOK_URL
-                  value: <path:secret/data/scripts#N8N_WEBHOOK_URL>
-                - name: N8N_CREDENTIALS
-                  value: <path:secret/data/scripts#N8N_CREDENTIALS>
-                - name: HEALTHCHECKS_URL_OCI_USAGE_COST
-                  value: <path:secret/data/scripts#HEALTHCHECKS_URL_OCI_USAGE_COST>
-                - name: DISCORD_WEBHOOK_URL
-                  value: <path:secret/data/scripts#DISCORD_WEBHOOK_URL>
                 - name: THRESHOLD
                   value: "5.0"
               volumeMounts:
@@ -50,11 +47,11 @@ spec:
                   subPath: config
           volumes:
             - name: oci-pem
-              configMap:
-                name: oci-pem
+              secret:
+                secretName: oci-pem
             - name: oci-config
-              configMap:
-                name: oci-config
+              secret:
+                secretName: oci-config
           restartPolicy: OnFailure
 # ---
 # apiVersion: apps/v1
