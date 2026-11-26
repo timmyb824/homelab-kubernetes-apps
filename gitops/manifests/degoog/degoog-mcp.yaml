@@ -11,7 +11,7 @@ data:
     deepSearch:
       enabled: true
       provider: openai-compat
-      model: "gpt-4o-mini-or"
+      model: "claude-haiku-latest-or"
       baseUrl: "http://litellm.litellm.svc.cluster.local:4000/v1"
       apiKey: "${LLM_API_KEY:-}"
 ---
