@@ -1,5 +1,16 @@
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+  name: degoog-mcp-secret
+  namespace: degoog
+type: Opaque
+stringData:
+  DEGOOG_MCP_DEGOOG_API_KEY: <path:secret/data/argocd#DEGOOG_API_KEY>
+  DEGOOG_MCP_AUTH_TOKEN: <path:secret/data/argocd#DEGOOG_MCP_AUTH_TOKEN>
+  LLM_API_KEY: <path:secret/data/argocd#DEGOOG_MCP_LLM_API_KEY>
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: degoog-mcp-config
@@ -57,6 +68,9 @@ spec:
           ports:
             - containerPort: 4443
               protocol: TCP
+          envFrom:
+            - secretRef:
+                name: degoog-mcp-secret
           env:
             - name: DEGOOG_MCP_CONFIG
               value: /data/mcp.yml
@@ -68,14 +82,8 @@ spec:
               value: info
             - name: DEGOOG_MCP_DEGOOG_URL
               value: http://degoog.degoog.svc.cluster.local:4444
-            - name: DEGOOG_MCP_DEGOOG_API_KEY
-              value: <path:secret/data/argocd#DEGOOG_API_KEY>
-            - name: DEGOOG_MCP_AUTH_TOKEN
-              value: <path:secret/data/argocd#DEGOOG_MCP_AUTH_TOKEN>
             - name: DEGOOG_MCP_USER_AGENT
               value: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
-            - name: LLM_API_KEY
-              value: <path:secret/data/argocd#DEGOOG_MCP_LLM_API_KEY>
           readinessProbe:
             httpGet:
               path: /healthz

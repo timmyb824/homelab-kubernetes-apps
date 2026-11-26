@@ -17,6 +17,19 @@ spec:
     requests:
       storage: 2Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: degoog-secret
+  namespace: degoog
+type: Opaque
+stringData:
+  DEGOOG_SETTINGS_PASSWORDS: <path:secret/data/argocd#DEGOOG_SETTINGS_PASSWORD>
+  DEGOOG_POSTGRES_HOST: <path:secret/data/postgres_db#HOST_NAME>
+  DEGOOG_POSTGRES_USER: <path:secret/data/postgres_db#USER>
+  DEGOOG_POSTGRES_PASSWORD: <path:secret/data/postgres_db#PASSWORD>
+  DEGOOG_VALKEY_URL: <path:secret/data/database#REDIS_CONN_STRING>
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,6 +56,9 @@ spec:
           ports:
             - containerPort: 4444
               protocol: TCP
+          envFrom:
+            - secretRef:
+                name: degoog-secret
           env:
             - name: PUID
               value: "0"
@@ -50,20 +66,10 @@ spec:
               value: "0"
             - name: DEGOOG_PUBLIC_INSTANCE
               value: "true"
-            - name: DEGOOG_SETTINGS_PASSWORDS
-              value: <path:secret/data/argocd#DEGOOG_SETTINGS_PASSWORD>
-            - name: DEGOOG_POSTGRES_HOST
-              value: <path:secret/data/postgres_db#HOST_NAME>
             - name: DEGOOG_POSTGRES_PORT
               value: "5432"
-            - name: DEGOOG_POSTGRES_USER
-              value: <path:secret/data/postgres_db#USER>
-            - name: DEGOOG_POSTGRES_PASSWORD
-              value: <path:secret/data/postgres_db#PASSWORD>
             - name: DEGOOG_POSTGRES_DATABASE
               value: degoog
-            - name: DEGOOG_VALKEY_URL
-              value: <path:secret/data/database#REDIS_CONN_STRING>
           resources:
             requests:
               cpu: 50m
