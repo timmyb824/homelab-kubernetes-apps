@@ -18,6 +18,18 @@ spec:
     requests:
       storage: 8Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: n8n-secret
+  namespace: n8n
+type: Opaque
+stringData:
+  DB_POSTGRESDB_HOST: <path:secret/data/postgres_db#HOST_NAME>
+  DB_POSTGRESDB_USER: <path:secret/data/postgres_db#USER>
+  DB_POSTGRESDB_PASSWORD: <path:secret/data/postgres_db#PASSWORD>
+  OPENAI_API_KEY: <path:secret/data/argocd#OPENAI_API_KEY>
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -52,19 +64,16 @@ spec:
           args:
             - -c
             - sleep 5; n8n start
+          envFrom:
+            - secretRef:
+                name: n8n-secret
           env:
             - name: DB_TYPE
               value: postgresdb
-            - name: DB_POSTGRESDB_HOST
-              value: <path:secret/data/postgres_db#HOST_NAME>
             - name: DB_POSTGRESDB_PORT
               value: "5432"
             - name: DB_POSTGRESDB_DATABASE
               value: n8n
-            - name: DB_POSTGRESDB_USER
-              value: <path:secret/data/postgres_db#USER>
-            - name: DB_POSTGRESDB_PASSWORD
-              value: <path:secret/data/postgres_db#PASSWORD>
             - name: N8N_PORT
               value: "5678"
             - name: N8N_WEBHOOK_URL
@@ -81,8 +90,6 @@ spec:
               value: https://n8n.timmybtech.com
             - name: NODE_OPTIONS
               value: --max-old-space-size=768
-            - name: OPENAI_API_KEY
-              value: <path:secret/data/argocd#OPENAI_API_KEY>
           image: n8nio/n8n:3.4.0
           name: n8n
           ports:

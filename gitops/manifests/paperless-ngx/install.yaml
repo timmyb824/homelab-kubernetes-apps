@@ -56,6 +56,38 @@ spec:
     requests:
       storage: 16Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: paperless-secret
+  namespace: paperless-ngx
+type: Opaque
+stringData:
+  PAPERLESS_DBHOST: <path:secret/data/postgres_db#HOST_NAME>
+  PAPERLESS_DBPASS: <path:secret/data/postgres_db#PASSWORD>
+  PAPERLESS_DBUSER: <path:secret/data/postgres_db#USER>
+  PAPERLESS_REDIS: "<path:secret/data/database#REDIS_CONN_STRING>"
+  PAPERLESS_ADMIN_USER: <path:secret/data/argocd#PAPERLESS_ADMIN_USER>
+  PAPERLESS_ADMIN_PASSWORD: <path:secret/data/argocd#PAPERLESS_ADMIN_PASSWORD>
+  PAPERLESS_SECRET_KEY: <path:secret/data/argocd#PAPERLESS_SECRET_KEY>
+  PAPERLESS_SOCIALACCOUNT_PROVIDERS: |
+    {
+      "openid_connect": {
+        "APPS": [
+          {
+            "provider_id": "authentik",
+            "name": "Authentik",
+            "client_id": "<path:secret/data/argocd#AUTHENTIK_PAPERLESS_CLIENT_ID>",
+            "secret": "<path:secret/data/argocd#AUTHENTIK_PAPERLESS_SECRET_ID>",
+            "settings": {
+              "server_url": "https://authentik.timmybtech.com/application/o/paperless/.well-known/openid-configuration"
+            }
+          }
+        ],
+        "OAUTH_PKCE_ENABLED": "True"
+      }
+    }
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -84,47 +116,18 @@ spec:
       nodeSelector:
         kubernetes.io/hostname: k3s-2-worker
       containers:
-        - env:
-            - name: PAPERLESS_DBHOST
-              value: <path:secret/data/postgres_db#HOST_NAME>
+        - envFrom:
+            - secretRef:
+                name: paperless-secret
+          env:
             - name: PAPERLESS_DBNAME
               value: paperless_utf8
-            - name: PAPERLESS_DBPASS
-              value: <path:secret/data/postgres_db#PASSWORD>
             - name: PAPERLESS_DBPORT
               value: "5432"
-            - name: PAPERLESS_DBUSER
-              value: <path:secret/data/postgres_db#USER>
-            - name: PAPERLESS_REDIS
-              value: "<path:secret/data/database#REDIS_CONN_STRING>"
             - name: PAPERLESS_URL
               value: https://paperless.local.timmybtech.com
-            - name: PAPERLESS_ADMIN_USER
-              value: <path:secret/data/argocd#PAPERLESS_ADMIN_USER>
-            - name: PAPERLESS_ADMIN_PASSWORD
-              value: <path:secret/data/argocd#PAPERLESS_ADMIN_PASSWORD>
-            - name: PAPERLESS_SECRET_KEY
-              value: <path:secret/data/argocd#PAPERLESS_SECRET_KEY>
             - name: PAPERLESS_APPS
               value: "allauth.socialaccount.providers.openid_connect"
-            - name: PAPERLESS_SOCIALACCOUNT_PROVIDERS
-              value: |
-                {
-                  "openid_connect": {
-                    "APPS": [
-                      {
-                        "provider_id": "authentik",
-                        "name": "Authentik",
-                        "client_id": "<path:secret/data/argocd#AUTHENTIK_PAPERLESS_CLIENT_ID>",
-                        "secret": "<path:secret/data/argocd#AUTHENTIK_PAPERLESS_SECRET_ID>",
-                        "settings": {
-                          "server_url": "https://authentik.timmybtech.com/application/o/paperless/.well-known/openid-configuration"
-                        }
-                      }
-                    ],
-                    "OAUTH_PKCE_ENABLED": "True"
-                  }
-                }
           image: ghcr.io/paperless-ngx/paperless-ngx:3.5.1
           imagePullPolicy: IfNotPresent
           name: webserver

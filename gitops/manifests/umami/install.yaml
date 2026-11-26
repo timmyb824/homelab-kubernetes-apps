@@ -4,6 +4,16 @@ kind: Namespace
 metadata:
   name: umami
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: umami-secret
+  namespace: umami
+type: Opaque
+stringData:
+  APP_SECRET: <path:secret/data/umami#APP_SECRET>
+  DATABASE_URL: <path:secret/data/umami#PG_URL>
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,20 +29,17 @@ spec:
       io.kompose.service: umami
   template:
     metadata:
-      annotations:
-        avp.kubernetes.io/path: "secret/data/umami"
       labels:
         io.kompose.service: umami
         app.kubernetes.io/name: umami
     spec:
       containers:
-        - env:
-            - name: APP_SECRET
-              value: <path:secret/data/umami#APP_SECRET>
+        - envFrom:
+            - secretRef:
+                name: umami-secret
+          env:
             - name: DATABASE_TYPE
               value: postgresql
-            - name: DATABASE_URL
-              value: <path:secret/data/umami#PG_URL>
           image: ghcr.io/umami-software/umami:postgresql-v2.13.2
           name: umami
           imagePullPolicy: Always

@@ -16,6 +16,15 @@ spec:
     requests:
       storage: 24Gi
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: registry-secret
+  namespace: registry
+type: Opaque
+stringData:
+  REGISTRY_HTTP_SECRET: "<path:secret/data/argocd#REGISTRY_HTTP_SECRET>"
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,6 +45,9 @@ spec:
         - name: registry
           image: registry:3.1.2
           imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: registry-secret
           env:
             - name: REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin
               value: "[http://registry.local.timmybtech.com,https://registry.local.timmybtech.com]"
@@ -49,8 +61,6 @@ spec:
               value: "[Docker-Content-Digest]"
             - name: REGISTRY_STORAGE_DELETE_ENABLED
               value: "true"
-            - name: REGISTRY_HTTP_SECRET
-              value: "<path:secret/data/argocd#REGISTRY_HTTP_SECRET>"
             - name: REGISTRY_LOG_LEVEL
               value: "info"
             - name: REGISTRY_HTTP_DEBUG_ADDR
